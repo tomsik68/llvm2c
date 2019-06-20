@@ -1,0 +1,43 @@
+language: cpp
+sudo: true
+
+dist: trusty
+
+git:
+  depth: 1
+
+addons:
+  apt:
+    sources:
+      # newer gcc and clang
+      - ubuntu-toolchain-r-test
+      - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main'
+        key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+      - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main'
+
+env:
+    - LLVM=3.8 BUILD_TYPE=Release
+    - LLVM=3.8 BUILD_TYPE=Debug
+    - LLVM=4.0 BUILD_TYPE=Release
+    - LLVM=4.0 BUILD_TYPE=Debug
+    - LLVM=5.0 BUILD_TYPE=Release
+    - LLVM=5.0 BUILD_TYPE=Debug
+
+compiler:
+    - 'clang++'
+
+install:
+  - git clone --depth 1 https://github.com/tomsik68/travis-llvm.git
+  - cd travis-llvm
+  - chmod +x travis-llvm.sh
+  - ./travis-llvm.sh ${LLVM}
+  - cd ..
+
+script:
+  - cmake -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DCMAKE_CXX_FLAGS=$CXX_FLAGS .
+  - make -j2
+  - cd test
+  - ./run
+
+notifications:
+    email: false
